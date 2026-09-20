@@ -22,9 +22,7 @@ public class Experiment {
     public static int[] generateReverseSortedArray(int n) {
         int[] arr = generateSortedArray(n);
         for (int i = 0; i < n / 2; i++) {
-            int temp = arr[i];
-            arr[i] = arr[n - 1 - i];
-            arr[n - 1 - i] = temp;
+            int temp = arr[i]; arr[i] = arr[n - 1 - i]; arr[n - 1 - i] = temp;
         }
         return arr;
     }
@@ -40,7 +38,8 @@ public class Experiment {
         String[] types = {"Random", "Sorted", "Reverse", "Duplicates"};
 
         try (PrintWriter writer = new PrintWriter(new FileWriter("results/results.csv"))) {
-            writer.println("Algorithm,InputSize,InputType,Time(ns)");
+            // Обновленный заголовок: добавили MaxDepth и ExtraMetric (Сравнения/Обмены)
+            writer.println("Algorithm,InputSize,InputType,Time(ns),MaxDepth,ExtraMetric");
 
             System.out.println("Warming up JVM...");
             for (int i = 0; i < 50; i++) {
@@ -59,20 +58,26 @@ public class Experiment {
                         default -> new int[0];
                     };
 
+                    // Замеряем MergeSort
                     int[] copyForMerge = Arrays.copyOf(original, original.length);
                     long startMerge = System.nanoTime();
                     MergeSorter.sort(copyForMerge);
                     long timeMerge = System.nanoTime() - startMerge;
-                    writer.println("MergeSort," + n + "," + type + "," + timeMerge);
 
+                    writer.println("MergeSort," + n + "," + type + "," + timeMerge + "," +
+                            MergeSorter.maxDepth + "," + MergeSorter.comparisons);
+
+                    // Замеряем QuickSort
                     int[] copyForQuick = Arrays.copyOf(original, original.length);
                     long startQuick = System.nanoTime();
                     QuickSorter.sort(copyForQuick);
                     long timeQuick = System.nanoTime() - startQuick;
-                    writer.println("QuickSort," + n + "," + type + "," + timeQuick);
+
+                    writer.println("QuickSort," + n + "," + type + "," + timeQuick + "," +
+                            QuickSorter.maxDepth + "," + QuickSorter.swaps);
                 }
             }
-            System.out.println("Experiments finished! Results are saved to results/results.csv");
+            System.out.println("Experiments finished! Metrics are saved to results/results.csv");
         } catch (IOException e) {
             System.err.println("Error writing to CSV file: " + e.getMessage());
         }
